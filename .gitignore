@@ -1,0 +1,13 @@
+.claude-flow
+
+.tools/
+.local/
+.build/
+dist/
+app/.build/
+*.log
+docs/*.md
+__pycache__/
+*.py[cod]
+.DS_Store
+# A separate project (its own git repository) kept here as a design reference; it contains personal data.

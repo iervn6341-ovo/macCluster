@@ -1,0 +1,37 @@
+# Native executor with an absolute executable path. Apply with:
+#   kubectl apply -f faq-native.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faq-native
+  namespace: maccluster-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: faq-native
+  template:
+    metadata:
+      labels:
+        app: faq-native
+        maccluster.example.com/managed: "true"
+        maccluster.example.com/executor: native
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        maccluster.example.com/host: maccluster-node
+      tolerations:
+        - key: maccluster.example.com/prototype
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: http
+          image: native/python-http:local
+          command: [/usr/bin/python3]
+          args: [-m, http.server, "$(MACCLUSTER_PORT)", --bind, "127.0.0.1"]
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000

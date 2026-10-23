@@ -1,0 +1,33 @@
+# Template: Docker executor (default). Replace NODE_NAME, NAMESPACE, APP_NAME and the image/port.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: APP_NAME
+  namespace: NAMESPACE
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: APP_NAME
+  template:
+    metadata:
+      labels:
+        app: APP_NAME
+        maccluster.example.com/managed: "true"
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        maccluster.example.com/host: NODE_NAME
+      tolerations:
+        - key: maccluster.example.com/prototype
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: app
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80

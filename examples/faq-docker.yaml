@@ -1,0 +1,34 @@
+# Default executor: no executor label means Docker. Apply with:
+#   kubectl apply -f faq-docker.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faq-docker
+  namespace: maccluster-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: faq-docker
+  template:
+    metadata:
+      labels:
+        app: faq-docker
+        maccluster.example.com/managed: "true"
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        maccluster.example.com/host: maccluster-node
+      tolerations:
+        - key: maccluster.example.com/prototype
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: web
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80

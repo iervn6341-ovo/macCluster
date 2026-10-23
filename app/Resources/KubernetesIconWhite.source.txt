@@ -1,0 +1,5 @@
+Kubernetes white icon, unchanged from CNCF artwork:
+https://github.com/cncf/artwork/blob/main/projects/kubernetes/icon/white/kubernetes-icon-white.png
+Downloaded 2026-10-20.
+Trademark policy: https://www.linuxfoundation.org/trademark-usage
+Used to identify Kubernetes clusters, not as a certification mark.

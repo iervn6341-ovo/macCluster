@@ -1,0 +1,42 @@
+# Native executor that runs inside a registered execution environment.
+# Register the environment first (App: toolbar "執行環境" > 新增, or CLI):
+#   maccluster-agent env add --name my-env --root /path/to/venv
+# Then apply with:
+#   kubectl apply -f faq-native-environment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faq-native-env
+  namespace: maccluster-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: faq-native-env
+  template:
+    metadata:
+      labels:
+        app: faq-native-env
+        maccluster.example.com/managed: "true"
+        maccluster.example.com/executor: native
+        maccluster.example.com/environment: my-env
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        maccluster.example.com/host: maccluster-node
+        env.maccluster.example.com/my-env: "true"
+      tolerations:
+        - key: maccluster.example.com/prototype
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: http
+          image: native/my-env:local
+          command: [python3]
+          args: [-m, http.server, "$(MACCLUSTER_PORT)", --bind, "127.0.0.1"]
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000

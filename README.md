@@ -18,6 +18,10 @@ MacCluster 提供 macOS 原生介面與 CLI。讓 nginx 在 Docker Desktop 中�
 
 ## 安裝
 
+### 下載 Release
+
+從 [GitHub Releases](../../releases/latest) 下載 App ZIP 與獨立 CLI／agent。維護者推送版本標籤（例如 `v1.0`）後，CI 會先執行測試與建置，成功才建立 Release 並附上這兩項成品。
+
 ### 從原始碼建置
 
 先安裝並完成 **Xcode 26 以上（macOS 26 SDK／Swift 6）**的首次設定。腳本會自動選用相容工具鏈；若缺少 Go 1.25 以上，會下載官方版本、核對 SHA256 並安裝到專案 `.tools/`。在專案根目錄執行：

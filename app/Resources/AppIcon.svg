@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+<defs>
+ <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#86E2FF"/><stop offset=".33" stop-color="#348EF5"/><stop offset=".72" stop-color="#2657D0"/><stop offset="1" stop-color="#112B80"/></linearGradient>
+ <radialGradient id="aura" cx=".2" cy=".07" r=".99"><stop stop-color="#DDFBFF" stop-opacity=".78"/><stop offset=".42" stop-color="#7DBDFF" stop-opacity=".16"/><stop offset="1" stop-color="#00165D" stop-opacity="0"/></radialGradient>
+ <linearGradient id="face" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F3FDFF" stop-opacity=".91"/><stop offset=".34" stop-color="#B0E9FF" stop-opacity=".73"/><stop offset=".57" stop-color="#68A8FC" stop-opacity=".42"/><stop offset="1" stop-color="#7CA2FF" stop-opacity=".22"/></linearGradient>
+ <linearGradient id="inner" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#D6F8FF" stop-opacity=".38"/><stop offset=".65" stop-color="#77C5FF" stop-opacity=".16"/><stop offset="1" stop-color="#F5F8FF" stop-opacity=".43"/></linearGradient>
+ <linearGradient id="wheel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".55" stop-color="#D6F6FF"/><stop offset="1" stop-color="#A7CEFF"/></linearGradient>
+ <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF" stop-opacity=".95"/><stop offset=".38" stop-color="#B9E9FF" stop-opacity=".42"/><stop offset="1" stop-color="#FFFFFF" stop-opacity=".7"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="26"/></filter>
+ <filter id="blur"><feGaussianBlur stdDeviation="33"/></filter>
+ <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="13" stdDeviation="16" flood-color="#07317F" flood-opacity=".36"/></filter>
+ <clipPath id="mask"><rect x="32" y="32" width="960" height="960" rx="214"/></clipPath>
+</defs>
+<g clip-path="url(#mask)">
+ <rect width="1024" height="1024" fill="url(#ground)"/>
+ <rect width="1024" height="1024" fill="url(#aura)"/>
+ <ellipse cx="400" cy="105" rx="440" ry="145" fill="#E8FFFF" opacity=".36" filter="url(#blur)"/>
+ <path d="M-100 733 C260 578 540 872 1124 553 L1124 1124 -100 1124Z" fill="#0C2C97" opacity=".23"/>
+ <path d="M-40 832 C290 702 654 993 1043 732" fill="none" stroke="#A0E4FF" stroke-width="69" opacity=".13" filter="url(#blur)"/>
+ <g filter="url(#shadow)"><rect x="192" y="180" width="644" height="670" rx="175" fill="#07256F" opacity=".33"/></g>
+ <!-- unified Finder-glass face silhouette -->
+ <g filter="url(#soft)">
+  <rect x="175" y="164" width="674" height="674" rx="170" fill="url(#face)" stroke="url(#rim)" stroke-width="15"/>
+  <rect x="196" y="184" width="632" height="630" rx="149" fill="url(#inner)" stroke="#F2FDFF" stroke-opacity=".33" stroke-width="4"/>
+ </g>
+ <!-- the iconic Finder central seam takes the form of a curved glass boundary -->
+ <path d="M506 179 C474 298 488 426 516 506 C545 588 563 690 514 816" stroke="#EFFFFF" stroke-width="9" stroke-opacity=".55" fill="none"/>
+ <path d="M500 184 C470 307 484 435 510 515 C537 601 551 705 506 815" stroke="#2268D0" stroke-width="25" stroke-opacity=".13" fill="none"/>
+ <!-- mac Finder left eye / cheek / nose -->
+ <path d="M334 385 Q344 362 364 385 L364 464" fill="none" stroke="#174C9E" stroke-width="27" stroke-linecap="round" opacity=".94"/>
+ <path d="M480 335 C450 412 427 491 456 538 L494 540" fill="none" stroke="#1A57A5" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity=".87"/>
+ <!-- Kubernetes wheel is the right eye itself, never a separate badge -->
+ <g transform="translate(655 410)">
+  <circle r="84" fill="#1A6CD4" fill-opacity=".14"/>
+  <circle r="75" fill="none" stroke="#266CC8" stroke-opacity=".42" stroke-width="24"/>
+  <circle r="75" fill="none" stroke="url(#wheel)" stroke-width="15"/>
+  <path d="M0.00 -25.00 L0.00 -96.00" stroke="#2064C6" stroke-opacity=".46" stroke-width="23" stroke-linecap="round"/>
+  <path d="M0.00 -25.00 L0.00 -96.00" stroke="url(#wheel)" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="0.00" cy="-104.00" r="12" fill="url(#wheel)" stroke="#7BC4FF" stroke-width="2"/>
+  <path d="M19.55 -15.59 L75.06 -59.86" stroke="#2064C6" stroke-opacity=".46" stroke-width="23" stroke-linecap="round"/>
+  <path d="M19.55 -15.59 L75.06 -59.86" stroke="url(#wheel)" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="81.31" cy="-64.84" r="12" fill="url(#wheel)" stroke="#7BC4FF" stroke-width="2"/>
+  <path d="M24.37 5.56 L93.59 21.36" stroke="#2064C6" stroke-opacity=".46" stroke-width="23" stroke-linecap="round"/>
+  <path d="M24.37 5.56 L93.59 21.36" stroke="url(#wheel)" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="101.39" cy="23.14" r="12" fill="url(#wheel)" stroke="#7BC4FF" stroke-width="2"/>
+  <path d="M10.85 22.52 L41.65 86.49" stroke="#2064C6" stroke-opacity=".46" stroke-width="23" stroke-linecap="round"/>
+  <path d="M10.85 22.52 L41.65 86.49" stroke="url(#wheel)" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="45.12" cy="93.70" r="12" fill="url(#wheel)" stroke="#7BC4FF" stroke-width="2"/>
+  <path d="M-10.85 22.52 L-41.65 86.49" stroke="#2064C6" stroke-opacity=".46" stroke-width="23" stroke-linecap="round"/>
+  <path d="M-10.85 22.52 L-41.65 86.49" stroke="url(#wheel)" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="-45.12" cy="93.70" r="12" fill="url(#wheel)" stroke="#7BC4FF" stroke-width="2"/>
+  <path d="M-24.37 5.56 L-93.59 21.36" stroke="#2064C6" stroke-opacity=".46" stroke-width="23" stroke-linecap="round"/>
+  <path d="M-24.37 5.56 L-93.59 21.36" stroke="url(#wheel)" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="-101.39" cy="23.14" r="12" fill="url(#wheel)" stroke="#7BC4FF" stroke-width="2"/>
+  <path d="M-19.55 -15.59 L-75.06 -59.86" stroke="#2064C6" stroke-opacity=".46" stroke-width="23" stroke-linecap="round"/>
+  <path d="M-19.55 -15.59 L-75.06 -59.86" stroke="url(#wheel)" stroke-width="15" stroke-linecap="round"/>
+  <circle cx="-81.31" cy="-64.84" r="12" fill="url(#wheel)" stroke="#7BC4FF" stroke-width="2"/>
+  <circle r="27" fill="url(#wheel)" stroke="#6BB7F2" stroke-width="3"/>
+  <circle r="11" fill="#317DDA"/>
+  <circle cx="-5" cy="-6" r="3.5" fill="#FFFFFF" opacity=".9"/>
+ </g>
+ <!-- one smile crossing two ecosystems -->
+ <path d="M310 616 C399 753 637 759 735 619" fill="none" stroke="#1452B3" stroke-width="32" stroke-linecap="round" opacity=".92"/>
+ <path d="M313 606 C401 736 633 742 731 610" fill="none" stroke="#DDF8FF" stroke-opacity=".85" stroke-width="9" stroke-linecap="round"/>
+ <!-- bright optical reflections -->
+ <path d="M231 322 C239 246 291 210 382 205" fill="none" stroke="#FFFFFF" stroke-width="19" stroke-linecap="round" opacity=".66"/>
+ <path d="M750 757 Q784 731 792 688" fill="none" stroke="#F5FFFF" stroke-width="11" stroke-linecap="round" opacity=".4"/>
+ <ellipse cx="305" cy="224" rx="88" ry="20" fill="#FFFFFF" opacity=".21" filter="url(#blur)"/>
+</g>
+<rect x="33" y="33" width="958" height="958" rx="213" fill="none" stroke="#FFFFFF" stroke-opacity=".38" stroke-width="7"/>
+</svg>

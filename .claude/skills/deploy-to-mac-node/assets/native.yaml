@@ -1,0 +1,41 @@
+# Template: native macOS process from an absolute path. The program must already exist on the Mac.
+# Replace NODE_NAME, NAMESPACE, APP_NAME and the command/args.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: APP_NAME
+  namespace: NAMESPACE
+spec:
+  replicas: 1
+  # Use Recreate for workloads that load a large model onto the GPU.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: APP_NAME
+  template:
+    metadata:
+      labels:
+        app: APP_NAME
+        maccluster.example.com/managed: "true"
+        maccluster.example.com/executor: native
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        maccluster.example.com/host: NODE_NAME
+      tolerations:
+        - key: maccluster.example.com/prototype
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: app
+          # Metadata only; nothing is downloaded for native workloads.
+          image: native/APP_NAME:local
+          command: [/usr/bin/python3]
+          args: [-m, http.server, "$(MACCLUSTER_PORT)", --bind, "127.0.0.1"]
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000

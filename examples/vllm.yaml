@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-metal
+  namespace: maccluster-test
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: maccluster-vllm
+  template:
+    metadata:
+      labels:
+        app: maccluster-vllm
+        maccluster.example.com/managed: "true"
+        maccluster.example.com/executor: native
+        # Needs: maccluster-agent env add --name vllm-metal --root ~/.venv-vllm-metal --set-env VLLM_PLUGINS=metal
+        maccluster.example.com/environment: vllm-metal
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 15
+      nodeSelector:
+        maccluster.example.com/host: maccluster-node
+        env.maccluster.example.com/vllm-metal: "true"
+      tolerations:
+        - key: maccluster.example.com/prototype
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: vllm
+          image: native/vllm-metal:local
+          command: [vllm]
+          args:
+            - serve
+            - /path/to/models/gemma-4-E4B-it
+            - --host
+            - "127.0.0.1"
+            - --port
+            - "$(MACCLUSTER_PORT)"
+            - --max-model-len
+            - "2048"
+            - --max-num-seqs
+            - "1"
+            - --served-model-name
+            - gemma-local
+          env:
+            - name: HF_HUB_OFFLINE
+              value: "1"
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            timeoutSeconds: 2

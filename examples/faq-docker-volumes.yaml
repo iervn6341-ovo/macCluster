@@ -1,0 +1,81 @@
+# Docker Pod with volumes: a writable emptyDir, a memory emptyDir with a size limit, a ConfigMap and a Secret as files,
+# and the Pod's own name as a file. Apply with:
+#   kubectl apply -f faq-docker-volumes.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faq-volumes-config
+  namespace: maccluster-test
+data:
+  app.conf: |
+    mode = demo
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: faq-volumes-secret
+  namespace: maccluster-test
+stringData:
+  token: change-me
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faq-docker-volumes
+  namespace: maccluster-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: faq-docker-volumes
+  template:
+    metadata:
+      labels:
+        app: faq-docker-volumes
+        maccluster.example.com/managed: "true"
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        maccluster.example.com/host: maccluster-node
+      tolerations:
+        - key: maccluster.example.com/prototype
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: web
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: scratch
+              mountPath: /scratch
+            - name: config
+              mountPath: /etc/app
+              readOnly: true
+            - name: secret
+              mountPath: /etc/secret
+              readOnly: true
+            - name: me
+              mountPath: /etc/me
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: scratch
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Mi
+        - name: config
+          configMap:
+            name: faq-volumes-config
+        - name: secret
+          secret:
+            secretName: faq-volumes-secret
+            defaultMode: 0400
+        - name: me
+          downwardAPI:
+            items:
+              - path: name
+                fieldRef:
+                  fieldPath: metadata.name

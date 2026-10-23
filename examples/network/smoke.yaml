@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: maccluster-net-test-20261018
+  labels:
+    maccluster.example.com/test: network-phase1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: maccluster-net-test-20261018
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: maccluster-network-nginx}
+  template:
+    metadata:
+      labels:
+        app: maccluster-network-nginx
+        maccluster.example.com/managed: "true"
+        maccluster.example.com/network: service
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: maccluster-nettest-20261018
+      tolerations:
+        - {key: maccluster.example.com/prototype, operator: Exists, effect: NoSchedule}
+        - {key: node.kubernetes.io/network-unavailable, operator: Exists, effect: NoSchedule}
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+          ports: [{name: http, containerPort: 80}]
+          readinessProbe:
+            httpGet: {path: /, port: http}
+            periodSeconds: 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: native-http
+  namespace: maccluster-net-test-20261018
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: maccluster-network-native}
+  template:
+    metadata:
+      labels:
+        app: maccluster-network-native
+        maccluster.example.com/managed: "true"
+        maccluster.example.com/executor: native
+        maccluster.example.com/network: service
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        kubernetes.io/hostname: maccluster-nettest-20261018
+      tolerations:
+        - {key: maccluster.example.com/prototype, operator: Exists, effect: NoSchedule}
+        - {key: node.kubernetes.io/network-unavailable, operator: Exists, effect: NoSchedule}
+      containers:
+        - name: http
+          image: native-python
+          command: [/usr/bin/python3]
+          args:
+            - -u
+            - -c
+            - |
+              import http.server, os
+              class Handler(http.server.BaseHTTPRequestHandler):
+                  def do_GET(self):
+                      body = b"maccluster native network smoke\n"
+                      self.send_response(200)
+                      self.send_header("Content-Length", str(len(body)))
+                      self.end_headers()
+                      self.wfile.write(body)
+              http.server.HTTPServer(("127.0.0.1", int(os.environ["MACCLUSTER_PORT"])), Handler).serve_forever()
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+          ports: [{name: http, containerPort: 8080}]
+          readinessProbe:
+            httpGet: {path: /, port: http}
+            periodSeconds: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: maccluster-net-test-20261018
+  labels: {maccluster.example.com/network: service}
+  annotations:
+    maccluster.example.com/service-selector: '{"app":"maccluster-network-nginx"}'
+spec:
+  ports: [{name: http, port: 80, targetPort: http}]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: native-http
+  namespace: maccluster-net-test-20261018
+  labels: {maccluster.example.com/network: service}
+  annotations:
+    maccluster.example.com/service-selector: '{"app":"maccluster-network-native"}'
+spec:
+  ports: [{name: http, port: 80, targetPort: 8080}]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: linux-probe
+  namespace: maccluster-net-test-20261018
+spec:
+  automountServiceAccountToken: false
+  nodeSelector:
+    kubernetes.io/hostname: linux-worker
+  containers:
+    - name: probe
+      image: busybox:1.36
+      command: [sh, -c, "sleep 86400"]
+      resources:
+        requests: {cpu: 10m, memory: 16Mi}

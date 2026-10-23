@@ -1,0 +1,44 @@
+# Native workload that binds its own fixed ports (see docs/fixed-ports.md). Apply with:
+#   kubectl apply -f faq-native-fixed-ports.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-fixed
+  namespace: maccluster-test
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vllm-fixed
+  template:
+    metadata:
+      labels:
+        app: vllm-fixed
+        maccluster.example.com/managed: "true"
+        maccluster.example.com/executor: native
+        maccluster.example.com/environment: vllm-metal
+        # Several ports are separated by "_" (label values cannot contain commas).
+        maccluster.example.com/fixed-ports: "8100_9100"
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        maccluster.example.com/host: maccluster-node
+        env.maccluster.example.com/vllm-metal: "true"
+      tolerations:
+        - key: maccluster.example.com/prototype
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: vllm
+          image: native/vllm-metal:local
+          command: [vllm]
+          args: [serve, /path/to/model, --host, "0.0.0.0", --port, "8100"]
+          ports:
+            - containerPort: 8100
+            - containerPort: 9100
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8100

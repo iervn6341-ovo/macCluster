@@ -1,0 +1,41 @@
+# Cluster-side egress proxy for Mac workloads (docs/egress-design.md). Replace IMAGE, the password, and the NodePort if needed.
+# The Mac reaches it through any node: http://USER:PASSWORD@NODE-IP:31080 (node option "egressProxy" on the Mac).
+apiVersion: v1
+kind: Namespace
+metadata: {name: maccluster-egress}
+---
+apiVersion: v1
+kind: Secret
+metadata: {name: egress-credentials, namespace: maccluster-egress}
+type: Opaque
+stringData:
+  EGRESS_USER: mac
+  EGRESS_PASSWORD: CHANGE-ME-generate-a-long-random-value
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: egress-gateway, namespace: maccluster-egress}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: egress-gateway}}
+  template:
+    metadata: {labels: {app: egress-gateway}}
+    spec:
+      automountServiceAccountToken: false   # the proxy never talks to the Kubernetes API
+      containers:
+      - name: egress
+        image: IMAGE   # e.g. REGISTRY/maccluster-egress:VERSION built from deploy/egress/Dockerfile
+        args: ["--listen", ":1080"]   # add --allow-cidr / --allow-suffix for other cluster networks; --allow-external only if intended
+        envFrom: [{secretRef: {name: egress-credentials}}]
+        ports: [{containerPort: 1080}]
+        readinessProbe: {tcpSocket: {port: 1080}, periodSeconds: 10}
+        securityContext: {runAsNonRoot: true, allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, capabilities: {drop: [ALL]}}
+        resources: {requests: {cpu: 20m, memory: 32Mi}, limits: {memory: 128Mi}}
+---
+apiVersion: v1
+kind: Service
+metadata: {name: egress-gateway, namespace: maccluster-egress}
+spec:
+  type: NodePort
+  selector: {app: egress-gateway}
+  ports: [{port: 1080, targetPort: 1080, nodePort: 31080}]

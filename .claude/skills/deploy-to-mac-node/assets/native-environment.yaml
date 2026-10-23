@@ -1,0 +1,43 @@
+# Template: native process inside a registered execution environment (for example a Python venv
+# with Metal packages). The environment must be registered on the Mac and advertised as the node
+# label env.maccluster.example.com/env-name=true. Replace NODE_NAME, NAMESPACE, APP_NAME and the lowercase placeholder env-name (two places + the label).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: APP_NAME
+  namespace: NAMESPACE
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: APP_NAME
+  template:
+    metadata:
+      labels:
+        app: APP_NAME
+        maccluster.example.com/managed: "true"
+        maccluster.example.com/executor: native
+        maccluster.example.com/environment: env-name
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector:
+        maccluster.example.com/host: NODE_NAME
+        env.maccluster.example.com/env-name: "true"
+      tolerations:
+        - key: maccluster.example.com/prototype
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: app
+          image: native/APP_NAME:local
+          # A bare command name is looked up only in the environment's bin directory.
+          command: [python3]
+          args: [-m, http.server, "$(MACCLUSTER_PORT)", --bind, "127.0.0.1"]
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000

@@ -1,0 +1,32 @@
+# Superseded by `maccluster-agent network-controller-manifests` (docs/service-controller-plan.md): kept as the earlier test example.
+# Deployment example; replace the image with your published, pinned image.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maccluster-network-controller
+  namespace: maccluster-net-test-20261018
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {app: maccluster-network-controller}
+  template:
+    metadata:
+      labels: {app: maccluster-network-controller}
+    spec:
+      serviceAccountName: maccluster-network-controller
+      nodeSelector:
+        kubernetes.io/os: linux
+      containers:
+        - name: controller
+          image: example.invalid/maccluster-network-controller:replace-me
+          args: ["--namespaces", "maccluster-net-test-20261018"]
+          resources:
+            requests: {cpu: 10m, memory: 64Mi}
+            limits: {memory: 256Mi}
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}

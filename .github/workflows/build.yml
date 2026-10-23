@@ -1,0 +1,95 @@
+name: Build app
+
+# Builds MacCluster.app (SwiftUI app + Go agent) on a GitHub-hosted macOS 26 runner and
+# uploads it as a downloadable artifact. Ad-hoc signed only: see README for first launch.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # The UI uses macOS 26 APIs (Liquid Glass), so it needs the macOS 26 SDK.
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      # Actions are pinned to commit SHAs (the comment is the release they point at).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Fails the build if personal or environment-identifying data was committed.
+      - name: Privacy check
+        run: ./scripts/check-privacy.sh
+
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version-file: go.mod
+
+      - name: Toolchain versions
+        run: |
+          sw_vers
+          xcodebuild -version
+          swift --version
+          go version
+
+      - name: Go vet and tests
+        run: |
+          go vet ./...
+          go test -race ./...
+
+      # Only suites that need neither a display nor a running agent. The rendering and
+      # terminal tests drive real windows and a local agent, so they are run on a Mac by hand.
+      - name: Swift tests
+        run: swift test --package-path app --disable-sandbox --filter "ANSILogTextTests|FAQExamplesTests|StatusDecodingTests"
+
+      # CI is set by GitHub: build.sh fails if AppIcon.icns is stale for AppIcon.svg
+      # instead of regenerating it (QuickLook needs a GUI session).
+      - name: Build app
+        run: ./scripts/build.sh
+
+      - name: Package
+        run: |
+          mkdir -p out
+          # ditto keeps the executable bits, symlinks and the ad-hoc signature that a plain
+          # artifact zip would drop.
+          ditto -c -k --sequesterRsrc --keepParent dist/MacCluster.app out/MacCluster-macOS-arm64.zip
+          cp dist/maccluster-agent out/maccluster-agent-darwin-arm64
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: MacCluster-macOS-arm64
+          path: out/
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Download verified build artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY" --name MacCluster-macOS-arm64 --dir release-assets
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            gh release create "$GITHUB_REF_NAME" release-assets/* --title "$GITHUB_REF_NAME" --generate-notes --prerelease
+          else
+            gh release create "$GITHUB_REF_NAME" release-assets/* --title "$GITHUB_REF_NAME" --generate-notes
+          fi
